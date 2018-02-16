@@ -38,7 +38,9 @@ class StemmedTfidfVectorizer(TfidfVectorizer):
 
 
 # Function Name: main()
-# Description:
+# Description: Control flow responsibile for instantiating various classes,
+#              handling command-line arguments, file-processing, and operating
+#              on the text.
 # Parameters: none
 # Return Value: none
 def main():
@@ -48,12 +50,18 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('file', type=argsparse.FileType('r'), nargs='+')
 
+    file_list = []  # List of all files (target and comparison)
+
+    # Go through all files passed in arguments
     for f in args.file:
-        vectorizer.fit(f)
+        # Go through all lines in current file
         for line in f:
+            # Seperate words by whitespace and add to collective list
+            line_list = [elt.strip() for elt in line.split()]
+            file_list.append(line_list)
 
-    #   ...process file
-
+    # Learn vocabulary from the target file 
+    vectorizer.fit(file_list[0])
 
 if __name__ == '__main__':
     main()
