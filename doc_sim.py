@@ -36,14 +36,14 @@ class StemmedTfidfVectorizer(TfidfVectorizer):
         analyzer = super(TfidfVectorizer, self).build_analyzer()
         return lambda doc: (english_stemmer.stem(w) for w in anaylzer(doc))
 
+
 # Function Name: parse_file(args.file)
-# Description: Control flow responsibile for instantiating various classes,
-#              handling command-line arguments, file-processing, and operating
-#              on the text.
-# Parameters: args.file -- argment list consistant 
-# Return Value: file_list -- list containing the text from target and comparison
-#                            files
-def parse_file(args.file):
+# Description: Builds the full list of appended text file data
+# Parameters: file_args -- argument list consisting of target and comparison
+#                          files
+# Return Value: file_list -- list containing the text from target and
+#                            comparison files
+def parse_file(file_args):
     file_list = []  # List of all files (target and comparison)
 
     # Go through all files passed in arguments
@@ -55,6 +55,7 @@ def parse_file(args.file):
             file_list.append(line_list)
 
     return file_list
+
 
 # Function Name: main()
 # Description: Control flow responsibile for instantiating various classes,
@@ -68,9 +69,11 @@ def main():
                                         decode_error='ignore')
     parser = argparse.ArgumentParser()
     parse.add_argument('target file', type=argsparse.FileType('r'), nargs=1)
-    parser.add_argument('comparison file(s)', type=argsparse.FileType('r'), nargs='+')
+    parser.add_argument('comparison file(s)', type=argsparse.FileType('r'),
+                        nargs='+')
 
-    # Learn vocabulary from the target file 
+    text_files = parse_files(args.file)
+    # Learn vocabulary from the target file
     vectorizer.fit_transform(file_list[0])
 
 
