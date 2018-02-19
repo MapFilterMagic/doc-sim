@@ -13,7 +13,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 # import os
 # import sys # For file-path operations
 
-# import argparse # For command-line argument parsing
+import argparse  # For command-line argument parsing
 
 import nltk.stem  # For English word stemmer
 
@@ -37,17 +37,15 @@ class StemmedTfidfVectorizer(TfidfVectorizer):
         return lambda doc: (english_stemmer.stem(w) for w in anaylzer(doc))
 
 
-# Function Name: parse_file(args.file)
-# Description: Builds the full list of appended text file data
-# Parameters: file_args -- argument list consisting of target and comparison
-#                          files
-# Return Value: file_list -- list containing the text from target and
-#                            comparison files
-def parse_file(file_args):
+# Function Name: parse_text(args.file)
+# Description: Builds a list of appended text file data
+# Parameters: file_args -- file argument list
+# Return Value: file_list -- list containing the text data from arg
+def parse_text(file_args):
     file_list = []  # List of all files (target and comparison)
 
-    # Go through all files passed in arguments
-    for f in args.file:
+    # Go through 1 or more files  passed in arguments
+    for f in file_args:
         # Go through all lines in current file
         for line in f:
             # Seperate words by whitespace and add to collective list
@@ -68,13 +66,19 @@ def main():
     vectorizer = StemmedTfidfVectorizer(min_df=1, stop_words='english',
                                         decode_error='ignore')
     parser = argparse.ArgumentParser()
-    parse.add_argument('target file', type=argsparse.FileType('r'), nargs=1)
-    parser.add_argument('comparison file(s)', type=argsparse.FileType('r'),
-                        nargs='+')
+    parser.add_argument('target_file', dest='target',
+                        type=argparse.FileType('r'), nargs=1)
+    parser.add_argument('comparison_file', dest='comparison',
+                        type=argparse.FileType('r'), nargs='+')
+    args = parser.parse_args()
 
-    text_files = parse_files(args.file)
+    # Parse text data for target post and comparison files 
+    target = parse_text(args.target)
+    comparison = parse_text(args.comparison)
+
     # Learn vocabulary from the target file
-    vectorizer.fit_transform(file_list[0])
+    vectorized = vectorizer.fit_transform(target)
+    print(vectorized.shape)
 
 
 if __name__ == '__main__':
