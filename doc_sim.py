@@ -1,3 +1,4 @@
+#
 # Name: Tony Murillo
 #
 # Filename: DocSimilarity
@@ -7,9 +8,11 @@
 # Description: A command-line program that utilizes the KMeans clustering
 # algorithm, TF-IDF vectorizer, and q the NTLK Stemmer to find related posts
 # and calculate document similarity
+#
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+from sklearn.cluster import KMeans  # For clustering
 # import os
 # import sys # For file-path operations
 
@@ -17,6 +20,7 @@ import argparse  # For command-line argument parsing
 
 import nltk.stem  # For English word stemmer
 
+from math import sqrt  # For cluster calculation
 # import scipy as sp
 # import numpy as np
 
@@ -41,20 +45,33 @@ class StemmedTfidfVectorizer(TfidfVectorizer):
 # Function Name: parse_text(args.file)
 # Description: Builds a list of appended text file data
 # Parameters: file_args -- file argument list
-# Return Value: file_list -- list containing the text data from arg
+# Return Value: file_list -- flattended list containing the text data from arg
 def parse_text(file_args):
     file_list = []  # List of all files (target and comparison)
 
-    # Go through 1 or more files  passed in arguments
+    # Go through 1 or more files passed in as arguments via file_args
     for f in file_args:
         # Go through all lines in current file
         for line in f:
             # Seperate words by whitespace and add to collective list
             line_list = [elt.strip() for elt in line.split()]
             file_list.append(line_list)
+            # CHANGE AND USE ITERTOOLS
             flat_file_list = [y for x in file_list for y in x]
 
     return flat_file_list
+
+
+# Function Name: est_clust_amt(vectorized)
+# Description: Estimates number of clusters by taking the square root of half
+#              of all datapoints or samples.
+# Parameters: vectorized -- vectozied text data from which to get sample count
+#                           from
+# Return Value: estimated number of clusters
+def est_clust_amt(shape):
+    HALF = 0.5  # Half of all datapoints
+
+    return sqrt((shape[0] * HALF))
 
 
 # Function Name: main()
@@ -79,14 +96,19 @@ def main():
     target = parse_text(args.target_file)
     comparison = parse_text(args.comparison_file)
 
-    # print(comparison)
-
     # Learn vocabulary from the target file
     vectorized = vectorizer.fit_transform(target)
 
-    km = KMeans(n_clusters
+    # Number of clusters is approx the square root of half of all datapoints
+    num_clust = est_clust_amt(vectorized.shape)
+
+    state = 3  # Assigned random_state argument of KMeans()
+
+    km = KMeans(n_clusters=num_clust, n_init=1, verbose=1, random_state=state)
+    clustered = km.fit(vectorized)
+
     print(vectorized.shape)
-    #print(comparison.shape)
+    # print(comparison.shape)
 
 
 if __name__ == '__main__':
