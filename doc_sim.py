@@ -93,10 +93,11 @@ def main():
     # Parse text data for target post and comparison files
     target = parse_text(args.target)
     comparison = parse_text(args.comparison)
-    print('target shape:%s' % target.shape)
-    print('target:%s' % target)
-    print('comparison shape%s' % comparison.shape)
-    print('comparison:%s' % comparison)
+    # DEBUGGING -- REMOVE WHEN FINISHED
+    # print('target shape:%s' % target.shape)
+    # print('target:%s' % target)
+    # print('comparison shape:%s' % comparison.shape)
+    # print('comparison:%s' % comparison)
 
     # Learn vocabulary from the comparison file(s)
     vectorized = vectorizer.fit_transform(comparison)
@@ -104,7 +105,7 @@ def main():
     # Number of clusters is approx the square root of half of all datapoints
     num_clust = est_clust_amt(vectorized.shape)
 
-    state = 3  # Assigned random_state argument of KMeans()
+    # state = 3  # Assigned random_state argument of KMeans()
 
     km = KMeans(n_clusters=num_clust, n_init=1, verbose=1 )
     km.fit(vectorized)
@@ -117,7 +118,7 @@ def main():
     target_label = km.predict(target_vectorized)
     # print(target_vectorized.get_feature_names())
     # target_label = km.predict(target_vectorized)
-    #print("target_label prediction:%s" % target_label)
+    print("target_label prediction:%s" % target_label)
     #print("target_label shape:", target_label.shape)
     #print('target_label: %s' % target_label)
     #print("target_label:%s" % target_label)
