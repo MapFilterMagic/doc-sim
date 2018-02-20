@@ -25,16 +25,17 @@ import nltk.stem  # For English word stemmer
 # Member Variables: english_stemmer -- English word-stemmer
 # Description: Adds English Stemming functionality to TF-IDF vectorizer
 class StemmedTfidfVectorizer(TfidfVectorizer):
-    # Intantiate an English SnowballStemmer
-    english_stemmer = nltk.stem.SnowballStemmer('english')
 
     # Function Name: build_analyzer
     # Description:
     # Parameters: self -- reference to this object
     # Return Value: A list of english word stems
     def build_analyzer(self):
+        # Intantiate an English SnowballStemmer
+        english_stemmer = nltk.stem.SnowballStemmer('english')
         analyzer = super(TfidfVectorizer, self).build_analyzer()
-        return lambda doc: (english_stemmer.stem(w) for w in anaylzer(doc))
+
+        return lambda doc: (english_stemmer.stem(w) for w in analyzer(doc))
 
 
 # Function Name: parse_text(args.file)
@@ -51,8 +52,9 @@ def parse_text(file_args):
             # Seperate words by whitespace and add to collective list
             line_list = [elt.strip() for elt in line.split()]
             file_list.append(line_list)
+            flat_file_list = [y for x in file_list for y in x]
 
-    return file_list
+    return flat_file_list
 
 
 # Function Name: main()
@@ -62,21 +64,29 @@ def parse_text(file_args):
 # Parameters: none
 # Return Value: none
 def main():
+    thresh = 10  # Words with counts less than threshold to be ignored
+
     # Instantiate the TD-IDF English-stemmed vectorizer
-    vectorizer = StemmedTfidfVectorizer(min_df=1, stop_words='english',
+    vectorizer = StemmedTfidfVectorizer(min_df=thresh, stop_words='english',
                                         decode_error='ignore')
     parser = argparse.ArgumentParser()
     parser.add_argument('target_file', type=argparse.FileType('r'), nargs=1)
-    parser.add_argument('comparison_file', type=argparse.FileType('r'), nargs='+')
+    parser.add_argument('comparison_file', type=argparse.FileType('r'),
+                        nargs='+')
     args = parser.parse_args()
 
     # Parse text data for target post and comparison files
     target = parse_text(args.target_file)
-    comparison = parse_text(args.comparison)
+    comparison = parse_text(args.comparison_file)
+
+    # print(comparison)
 
     # Learn vocabulary from the target file
     vectorized = vectorizer.fit_transform(target)
+
+    km = KMeans(n_clusters
     print(vectorized.shape)
+    #print(comparison.shape)
 
 
 if __name__ == '__main__':
