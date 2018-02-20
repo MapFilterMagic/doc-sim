@@ -53,15 +53,11 @@ def parse_text(file_args):
 
     # Go through 1 or more files passed in as arguments via file_args
     for f in file_args:
-        # Go through all lines in current file
-        for line in f:
-            # Seperate words by whitespace and add to collective list
-            line_list = [elt.strip() for elt in line.split()]
-            file_list.append(line_list)
-            # CHANGE AND USE ITERTOOLS
-            flat_file_list = [y for x in file_list for y in x]
+        text = f.read().replace('\n', '')
+        file_list.append(text)
 
-    return flat_file_list
+    print(file_list)
+    return np.array(file_list)
 
 
 # Function Name: est_clust_amt(vectorized)
@@ -83,7 +79,7 @@ def est_clust_amt(shape):
 # Parameters: none
 # Return Value: none
 def main():
-    thresh = 10  # Words with counts less than threshold to be ignored
+    thresh = 5  # Words with counts less than threshold to be ignored
 
     # Instantiate the TD-IDF English-stemmed vectorizer
     vectorizer = StemmedTfidfVectorizer(min_df=thresh, stop_words='english',
@@ -97,36 +93,58 @@ def main():
     # Parse text data for target post and comparison files
     target = parse_text(args.target)
     comparison = parse_text(args.comparison)
+    print('target shape:%s' % target.shape)
+    print('target:%s' % target)
+    print('comparison shape%s' % comparison.shape)
+    print('comparison:%s' % comparison)
 
     # Learn vocabulary from the comparison file(s)
     vectorized = vectorizer.fit_transform(comparison)
 
-    # print("Shape:")
-    # print(vectorized.shape)
-    # print(comparison)
     # Number of clusters is approx the square root of half of all datapoints
     num_clust = est_clust_amt(vectorized.shape)
 
     state = 3  # Assigned random_state argument of KMeans()
 
-    # Compute clustering
-    km = KMeans(n_clusters=num_clust, n_init=1, verbose=1, random_state=state)
+    km = KMeans(n_clusters=num_clust, n_init=1, verbose=1 )
     km.fit(vectorized)
+    # print(vectorized.get_feature_names())
+
+    #new_post = ["Means I don't fuck with you"]
 
     target_vectorized = vectorizer.transform(target)
+    #target_vectorized = vectorizer.transform(new_post)
     target_label = km.predict(target_vectorized)
+    # print(target_vectorized.get_feature_names())
+    # target_label = km.predict(target_vectorized)
+    #print("target_label prediction:%s" % target_label)
+    #print("target_label shape:", target_label.shape)
+    #print('target_label: %s' % target_label)
+    #print("target_label:%s" % target_label)
 
+    # print(len(km.labels_))
+    #print(len(target_label))
+
+    # print(len(sim_i))
+
+    # print(np.nonzero(km.labels_))
     sim_i = np.nonzero(km.labels_ == target_label)[0]
 
-    similar_files = []
+    # print("sim i")
+    # print(sim_i)
+
+    # similar_files = []
 
     # print("Shape of target:", target_vectorized.shape)
     # print("Shape of comp:", vectorized.shape)
-    for i in sim_i:
-        dist = sp.linalg.norm((target_vectorized - vectorized[i]).toarray())
-        similar_files.append((dist, comparison[i]))
+    # for i in sim_i:
+    #    dist = sp.linalg.norm((target_vectorized - vectorized[i]).toarray())
+    #    similar_files.append((dist, comparison[i]))
 
-    similar_files = sorted(similar_files)
+    # print("Similar: %s" % similar_files)
+    # similar_files = sorted(similar_files)
+
+    # print("Count Similar: %i" %len(similar_files))
 
 
 if __name__ == '__main__':
