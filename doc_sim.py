@@ -71,7 +71,7 @@ def parse_text(file_args):
 def est_clust_amt(shape):
     HALF = 0.5  # Half of all datapoints
 
-    return sqrt((shape[0] * HALF))
+    return int(sqrt((shape[0] * HALF)))
 
 
 # Function Name: main()
@@ -87,28 +87,29 @@ def main():
     vectorizer = StemmedTfidfVectorizer(min_df=thresh, stop_words='english',
                                         decode_error='ignore')
     parser = argparse.ArgumentParser()
-    parser.add_argument('target_file', type=argparse.FileType('r'), nargs=1)
-    parser.add_argument('comparison_file', type=argparse.FileType('r'),
+    parser.add_argument('target', type=argparse.FileType('r'), nargs=1)
+    parser.add_argument('comparison', type=argparse.FileType('r'),
                         nargs='+')
     args = parser.parse_args()
 
     # Parse text data for target post and comparison files
-    target = parse_text(args.target_file)
-    comparison = parse_text(args.comparison_file)
+    target = parse_text(args.target)
+    comparison = parse_text(args.comparison)
 
-    # Learn vocabulary from the target file
-    vectorized = vectorizer.fit_transform(target)
+    # Learn vocabulary from the comparison file(s)
+    vectorized = vectorizer.fit_transform(comparison)
 
+    # print("Shape:")
+    # print(vectorized.shape)
+    # print(comparison)
     # Number of clusters is approx the square root of half of all datapoints
     num_clust = est_clust_amt(vectorized.shape)
 
     state = 3  # Assigned random_state argument of KMeans()
 
+    # Compute clustering
     km = KMeans(n_clusters=num_clust, n_init=1, verbose=1, random_state=state)
     clustered = km.fit(vectorized)
-
-    print(vectorized.shape)
-    # print(comparison.shape)
 
 
 if __name__ == '__main__':
