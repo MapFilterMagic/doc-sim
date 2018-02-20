@@ -66,14 +66,12 @@ def main():
     vectorizer = StemmedTfidfVectorizer(min_df=1, stop_words='english',
                                         decode_error='ignore')
     parser = argparse.ArgumentParser()
-    parser.add_argument('target_file', dest='target',
-                        type=argparse.FileType('r'), nargs=1)
-    parser.add_argument('comparison_file', dest='comparison',
-                        type=argparse.FileType('r'), nargs='+')
+    parser.add_argument('target_file', type=argparse.FileType('r'), nargs=1)
+    parser.add_argument('comparison_file', type=argparse.FileType('r'), nargs='+')
     args = parser.parse_args()
 
-    # Parse text data for target post and comparison files 
-    target = parse_text(args.target)
+    # Parse text data for target post and comparison files
+    target = parse_text(args.target_file)
     comparison = parse_text(args.comparison)
 
     # Learn vocabulary from the target file
