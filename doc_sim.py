@@ -51,12 +51,12 @@ class StemmedTfidfVectorizer(TfidfVectorizer):
 def parse_text(file_args):
     file_list = []  # List of all files (target and comparison)
 
-    # Go through 1 or more files passed in as arguments via file_args
+    # Go through 1 or more files passed in as arguments via file_args,
+    # remove strip newlines, and append it to the file_list
     for f in file_args:
-        text = f.read().replace('\n', '')
+        text = f.read().replace('\n', ' ')
         file_list.append(text)
 
-    print(file_list)
     return np.array(file_list)
 
 
@@ -79,7 +79,7 @@ def est_clust_amt(shape):
 # Parameters: none
 # Return Value: none
 def main():
-    thresh = 5  # Words with counts less than threshold to be ignored
+    thresh = 1  # Words with counts less than threshold to be ignored
 
     # Instantiate the TD-IDF English-stemmed vectorizer
     vectorizer = StemmedTfidfVectorizer(min_df=thresh, stop_words='english',
