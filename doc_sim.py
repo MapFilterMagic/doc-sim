@@ -11,8 +11,10 @@
 #
 
 from sklearn.feature_extraction.text import TfidfVectorizer
-
 from sklearn.cluster import KMeans  # For clustering
+
+from math import sqrt  # For cluster calculation
+
 # import os
 # import sys # For file-path operations
 
@@ -20,9 +22,9 @@ import argparse  # For command-line argument parsing
 
 import nltk.stem  # For English word stemmer
 
-from math import sqrt  # For cluster calculation
-# import scipy as sp
-# import numpy as np
+
+import scipy as sp
+import numpy as np
 
 
 # Class Name: StemmedTfidfVectorizer
@@ -109,7 +111,22 @@ def main():
 
     # Compute clustering
     km = KMeans(n_clusters=num_clust, n_init=1, verbose=1, random_state=state)
-    clustered = km.fit(vectorized)
+    km.fit(vectorized)
+
+    target_vectorized = vectorizer.transform(target)
+    target_label = km.predict(target_vectorized)
+
+    sim_i = np.nonzero(km.labels_ == target_label)[0]
+
+    similar_files = []
+
+    # print("Shape of target:", target_vectorized.shape)
+    # print("Shape of comp:", vectorized.shape)
+    for i in sim_i:
+        dist = sp.linalg.norm((target_vectorized - vectorized[i]).toarray())
+        similar_files.append((dist, comparison[i]))
+
+    similar_files = sorted(similar_files)
 
 
 if __name__ == '__main__':
