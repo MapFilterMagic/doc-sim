@@ -79,7 +79,7 @@ def est_clust_amt(shape):
 # Parameters: none
 # Return Value: none
 def main():
-    thresh = 1  # Words with counts less than threshold to be ignored
+    thresh = 2  # Words with counts less than threshold to be ignored
 
     # Instantiate the TD-IDF English-stemmed vectorizer
     vectorizer = StemmedTfidfVectorizer(min_df=thresh, stop_words='english',
@@ -93,6 +93,7 @@ def main():
     # Parse text data for target post and comparison files
     target = parse_text(args.target)
     comparison = parse_text(args.comparison)
+
     # DEBUGGING -- REMOVE WHEN FINISHED
     # print('target shape:%s' % target.shape)
     # print('target:%s' % target)
@@ -105,45 +106,45 @@ def main():
     # Number of clusters is approx the square root of half of all datapoints
     num_clust = est_clust_amt(vectorized.shape)
 
-    # state = 3  # Assigned random_state argument of KMeans()
+    state = 3  # Assigned random_state argument of KMeans()
 
-    km = KMeans(n_clusters=num_clust, n_init=1, verbose=1 )
+    km = KMeans(n_clusters=num_clust, n_init=1, verbose=1, random_state=state )
     km.fit(vectorized)
     # print(vectorized.get_feature_names())
 
-    #new_post = ["Means I don't fuck with you"]
-
     target_vectorized = vectorizer.transform(target)
-    #target_vectorized = vectorizer.transform(new_post)
     target_label = km.predict(target_vectorized)
+
+    # DEBUGGING -- REMOVE
     # print(target_vectorized.get_feature_names())
-    # target_label = km.predict(target_vectorized)
-    print("target_label prediction:%s" % target_label)
-    #print("target_label shape:", target_label.shape)
-    #print('target_label: %s' % target_label)
-    #print("target_label:%s" % target_label)
+    # print("target_label prediction:%s" % target_label)
+    # print('target_label: %s' % target_label)
+    # print("target_label shape:", target_label.shape)
 
+    # DEBUGGING -- REMOVE
     # print(len(km.labels_))
-    #print(len(target_label))
-
+    # print(len(target_label))
     # print(len(sim_i))
-
     # print(np.nonzero(km.labels_))
+
     sim_i = np.nonzero(km.labels_ == target_label)[0]
 
+    # DEBUGGING -- REMOVE
     # print("sim i")
     # print(sim_i)
 
-    # similar_files = []
+    similar_files = []
 
     # print("Shape of target:", target_vectorized.shape)
     # print("Shape of comp:", vectorized.shape)
-    # for i in sim_i:
-    #    dist = sp.linalg.norm((target_vectorized - vectorized[i]).toarray())
-    #    similar_files.append((dist, comparison[i]))
+    for i in sim_i:
+        dist = sp.linalg.norm((target_vectorized - vectorized[i]).toarray())
+        similar_files.append((dist, comparison[i]))
+
+    similar_files = sorted(similar_files)
 
     # print("Similar: %s" % similar_files)
-    # similar_files = sorted(similar_files)
+    print(similar_files[0])
 
     # print("Count Similar: %i" %len(similar_files))
 
