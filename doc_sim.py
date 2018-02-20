@@ -9,6 +9,11 @@
 # algorithm, TF-IDF vectorizer, and q the NTLK Stemmer to find related posts
 # and calculate document similarity
 #
+# Credits: Various codeblocks/techniques via the book "Building Machine Learning
+#          Systems with Python" by Willi Richert and Luis Pedro Coelho
+#
+# Under the MIT License
+#
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans  # For clustering
