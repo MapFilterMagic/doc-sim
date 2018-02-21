@@ -6,8 +6,8 @@
 # Date: 12 February, 2018
 #
 # Description: A command-line program that utilizes the KMeans clustering
-# algorithm, TF-IDF vectorizer, and q the NTLK Stemmer to find related posts
-# and calculate document similarity
+#              algorithm, TF-IDF vectorizer, and NTLK Stemmer to find related
+#              posts and calculate document similarity
 #
 # Credits: Various codeblocks/techniques via the book "Building Machine Learning
 #          Systems with Python" by Willi Richert and Luis Pedro Coelho
@@ -16,32 +16,25 @@
 #
 
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.cluster import KMeans  # For clustering
+from sklearn.cluster import KMeans
 
-from math import sqrt  # For cluster calculation
+from math import sqrt
 
-# import os
-# import sys # For file-path operations
-
-import argparse  # For command-line argument parsing
-
-import nltk.stem  # For English word stemmer
-
+import argparse
+import nltk.stem
 
 import scipy as sp
 import numpy as np
 
-
-# Class Name: StemmedTfidfVectorizer
-# Member Variables: english_stemmer -- English word-stemmer
-# Description: Adds English Stemming functionality to TF-IDF vectorizer
 class StemmedTfidfVectorizer(TfidfVectorizer):
+    """Implement an English word-stemmer within a TF-IDF vectorizer.
 
-    # Function Name: build_analyzer
-    # Description:
-    # Parameters: self -- reference to this object
-    # Return Value: A list of english word stems
+    Overides the tokenzation function to use the nltk word-stemmer.
+
+    """
     def build_analyzer(self):
+        """Return a callable that handles preprocessing and tokenization.
+        """
         # Intantiate an English SnowballStemmer
         english_stemmer = nltk.stem.SnowballStemmer('english')
         analyzer = super(TfidfVectorizer, self).build_analyzer()
@@ -49,11 +42,20 @@ class StemmedTfidfVectorizer(TfidfVectorizer):
         return lambda doc: (english_stemmer.stem(w) for w in analyzer(doc))
 
 
-# Function Name: parse_text(args.file)
-# Description: Builds a list of appended text file data
-# Parameters: file_args -- file argument list
-# Return Value: file_list -- flattended list containing the text data from arg
 def parse_text(file_args):
+    """Build a list of appended text file data.
+
+    Iterate over all file arguments and read each file. Within each text file,
+    strip all newlines and replace them with a single whitespace. Append the
+    formatted text to the file list to return. Able to parse 1 or more text
+    files.
+
+    In the case of 1 file (most often, the target file), return a list with a
+    single formatted post, free of newlines.
+
+    In the case of 2 or more files, return a list
+    file, return a list with a single string of the
+    """
     file_list = []  # List of all files (target and comparison)
 
     # Go through 1 or more files passed in as arguments via file_args,
@@ -65,25 +67,22 @@ def parse_text(file_args):
     return np.array(file_list)
 
 
-# Function Name: est_clust_amt(vectorized)
-# Description: Estimates number of clusters by taking the square root of half
-#              of all datapoints or samples.
-# Parameters: vectorized -- vectozied text data from which to get sample count
-#                           from
-# Return Value: estimated number of clusters
 def est_clust_amt(shape):
+    """Estimate number of clusters to use in KMeans algorithm.
+
+    Approximate number of clusters is equivalent to the square root of half of
+    all datapoints/samples.
+
+    """
     HALF = 0.5  # Half of all datapoints
 
     return int(sqrt((shape[0] * HALF)))
 
 
-# Function Name: main()
-# Description: Control flow responsibile for instantiating various classes,
-#              handling command-line arguments, file-processing, and operating
-#              on the text.
-# Parameters: none
-# Return Value: none
 def main():
+    """Responsbile general control flow and handling command line arguments.
+
+    """
     thresh = 2  # Words with counts less than threshold to be ignored
 
     # Instantiate the TD-IDF English-stemmed vectorizer
@@ -99,12 +98,6 @@ def main():
     target = parse_text(args.target)
     comparison = parse_text(args.comparison)
 
-    # DEBUGGING -- REMOVE WHEN FINISHED
-    # print('target shape:%s' % target.shape)
-    # print('target:%s' % target)
-    # print('comparison shape:%s' % comparison.shape)
-    # print('comparison:%s' % comparison)
-
     # Learn vocabulary from the comparison file(s)
     vectorized = vectorizer.fit_transform(comparison)
 
@@ -115,43 +108,21 @@ def main():
 
     km = KMeans(n_clusters=num_clust, n_init=1, verbose=1, random_state=state )
     km.fit(vectorized)
-    # print(vectorized.get_feature_names())
 
     target_vectorized = vectorizer.transform(target)
     target_label = km.predict(target_vectorized)
 
-    # DEBUGGING -- REMOVE
-    # print(target_vectorized.get_feature_names())
-    # print("target_label prediction:%s" % target_label)
-    # print('target_label: %s' % target_label)
-    # print("target_label shape:", target_label.shape)
-
-    # DEBUGGING -- REMOVE
-    # print(len(km.labels_))
-    # print(len(target_label))
-    # print(len(sim_i))
-    # print(np.nonzero(km.labels_))
-
     sim_i = np.nonzero(km.labels_ == target_label)[0]
-
-    # DEBUGGING -- REMOVE
-    # print("sim i")
-    # print(sim_i)
 
     similar_files = []
 
-    # print("Shape of target:", target_vectorized.shape)
-    # print("Shape of comp:", vectorized.shape)
     for i in sim_i:
         dist = sp.linalg.norm((target_vectorized - vectorized[i]).toarray())
         similar_files.append((dist, comparison[i]))
 
     similar_files = sorted(similar_files)
 
-    # print("Similar: %s" % similar_files)
     print(similar_files[0])
-
-    # print("Count Similar: %i" %len(similar_files))
 
 
 if __name__ == '__main__':
