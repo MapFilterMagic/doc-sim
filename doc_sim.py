@@ -1,15 +1,11 @@
 #
 # Name: Tony Murillo
-#
 # Filename: DocSimilarity
-#
 # Date: 12 February, 2018
-#
 # Description: A command-line program that utilizes the KMeans clustering
 #              algorithm, TF-IDF vectorizer, and NTLK Stemmer to find related
 #              posts and calculate document similarity
-#
-# Credits: Various codeblocks/techniques via the book "Building Machine Learning
+# Credits: For codeblocks & techniques via the book "Building Machine Learning
 #          Systems with Python" by Willi Richert and Luis Pedro Coelho
 #
 # Under the MIT License
@@ -26,14 +22,19 @@ import nltk.stem
 import scipy as sp
 import numpy as np
 
+
 class StemmedTfidfVectorizer(TfidfVectorizer):
     """Implement an English word-stemmer within a TF-IDF vectorizer.
 
     Overides the tokenzation function to use the nltk word-stemmer.
 
     """
+
     def build_analyzer(self):
         """Return a callable that handles preprocessing and tokenization.
+
+        Include an English word-stemmer during pre-processing and tokenization.
+
         """
         # Intantiate an English SnowballStemmer
         english_stemmer = nltk.stem.SnowballStemmer('english')
@@ -55,8 +56,10 @@ def parse_text(file_args):
 
     In the case of 2 or more files, return a list
     file, return a list with a single string of the
+
     """
-    file_list = []  # List of all files (target and comparison)
+    # List of all files (target and comparison)
+    file_list = []
 
     # Go through 1 or more files passed in as arguments via file_args,
     # remove strip newlines, and append it to the file_list
@@ -74,7 +77,8 @@ def est_clust_amt(shape):
     all datapoints/samples.
 
     """
-    HALF = 0.5  # Half of all datapoints
+    # Half of all datapoints
+    HALF = 0.5
 
     return int(sqrt((shape[0] * HALF)))
 
@@ -82,8 +86,12 @@ def est_clust_amt(shape):
 def main():
     """Responsbile general control flow and handling command line arguments.
 
+    Build argparser arguments and parse text files and vectorize them. Then
+    use KMeans clustering to predict the target file
+
     """
-    thresh = 2  # Words with counts less than threshold to be ignored
+    # Words with counts less than threshold to be ignored
+    thresh = 2
 
     # Instantiate the TD-IDF English-stemmed vectorizer
     vectorizer = StemmedTfidfVectorizer(min_df=thresh, stop_words='english',
@@ -104,26 +112,37 @@ def main():
     # Number of clusters is approx the square root of half of all datapoints
     num_clust = est_clust_amt(vectorized.shape)
 
-    state = 3  # Assigned random_state argument of KMeans()
+    # Assigned random_state argument of KMeans()
+    state = 3
 
-    km = KMeans(n_clusters=num_clust, n_init=1, verbose=1, random_state=state )
+    km = KMeans(n_clusters=num_clust, n_init=1, verbose=0, random_state=state)
     km.fit(vectorized)
 
+    # Predict the target file
     target_vectorized = vectorizer.transform(target)
     target_label = km.predict(target_vectorized)
 
+    # Find posts in the same cluster via their indices
     sim_i = np.nonzero(km.labels_ == target_label)[0]
 
+    # Will hold posts sorted by their similarity score in comparison to the
+    # target file
     similar_files = []
 
+    # Build similarity score and post list
     for i in sim_i:
         dist = sp.linalg.norm((target_vectorized - vectorized[i]).toarray())
         similar_files.append((dist, comparison[i]))
 
     similar_files = sorted(similar_files)
 
+    print('=================================================================' +
+          '===\n')
     print(similar_files[0])
+    print('\n===============================================================' +
+          '====\n')
 
 
 if __name__ == '__main__':
+    """ Will only execute if module is ran directly."""
     main()
